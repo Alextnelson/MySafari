@@ -8,13 +8,14 @@
 
 #import "ViewController.h"
 
-@interface ViewController () <UITextFieldDelegate, UIWebViewDelegate>
+@interface ViewController () <UITextFieldDelegate, UIWebViewDelegate, UIScrollViewDelegate>
 
 @property (weak, nonatomic) IBOutlet UIWebView *webView;
 @property (weak, nonatomic) IBOutlet UITextField *urlTextField;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *networkActivityIndicator;
 @property (weak, nonatomic) IBOutlet UIButton *forwardButton;
 @property (weak, nonatomic) IBOutlet UIButton *backButton;
+@property NSURL *url;
 
 @end
 
@@ -31,10 +32,18 @@
     NSURL *url = [[NSURL alloc] initWithString:urlString];
     NSURLRequest *request = [NSURLRequest requestWithURL:url];
     [self.webView loadRequest:request];
+    self.webView.scrollView.delegate = self;
 }
 
+
 -(BOOL)textFieldShouldReturn:(UITextField *)textField {
-    [self goToURLString:textField.text];
+    if ([[textField.text lowercaseString] hasPrefix:@"http://"]) {
+        [self goToURLString:textField.text];
+    } else {
+        NSString *formattedTextField = [NSString stringWithFormat:@"http://%@", textField.text];
+        [self goToURLString:formattedTextField];
+    }
+    
     [textField resignFirstResponder];
     
     return YES;
@@ -49,6 +58,15 @@
     [self.networkActivityIndicator stopAnimating];
     [self.backButton setEnabled:[self.webView canGoBack]];
     [self.forwardButton setEnabled:[self.webView canGoForward]];
+}
+
+-(void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    self.urlTextField.hidden = TRUE;
+    
+}
+
+-(void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    self.urlTextField.hidden = FALSE;
 }
 
 - (IBAction)onBackButtonPressed:(id)sender {
