@@ -13,6 +13,8 @@
 @property (weak, nonatomic) IBOutlet UIWebView *webView;
 @property (weak, nonatomic) IBOutlet UITextField *urlTextField;
 @property (weak, nonatomic) IBOutlet UIActivityIndicatorView *networkActivityIndicator;
+@property (weak, nonatomic) IBOutlet UIButton *forwardButton;
+@property (weak, nonatomic) IBOutlet UIButton *backButton;
 
 @end
 
@@ -21,6 +23,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self goToURLString:@"http://www.suilapp.com"];
+    [self.backButton setEnabled:NO];
+    [self.forwardButton setEnabled:NO];
 }
 
 -(void)goToURLString:(NSString *)urlString {
@@ -30,8 +34,10 @@
 }
 
 -(BOOL)textFieldShouldReturn:(UITextField *)textField {
-    NSURL *url = [[NSURL alloc] initWithString:self.urlTextField.text];
-    return url;
+    [self goToURLString:textField.text];
+    [textField resignFirstResponder];
+    
+    return YES;
 }
 
 -(void)webViewDidStartLoad:(UIWebView *)webView {
@@ -41,6 +47,39 @@
 
 -(void)webViewDidFinishLoad:(UIWebView *)webView {
     [self.networkActivityIndicator stopAnimating];
+    [self.backButton setEnabled:[self.webView canGoBack]];
+    [self.forwardButton setEnabled:[self.webView canGoForward]];
+}
+
+- (IBAction)onBackButtonPressed:(id)sender {
+    if ([self.webView canGoBack]) {
+        [self.webView goBack];
+    }
+}
+
+- (IBAction)onForwardButtonPressed:(id)sender {
+    if ([self.webView canGoForward]) {
+        [self.webView goForward];
+    }
+}
+
+- (IBAction)onStopLoadingButtonPressed:(id)sender {
+    [self.webView stopLoading];
+    [self webViewDidFinishLoad:self.webView];
+}
+
+- (IBAction)onReloadButtonPressed:(id)sender {
+    [self.webView reload];
+}
+
+- (IBAction)comingSoon:(id)sender {
+    UIAlertController *comingSoonAlert = [UIAlertController alertControllerWithTitle:@"Coming soon!" message:@"Currently under construction" preferredStyle:UIAlertControllerStyleAlert];
+    
+    UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action) {[comingSoonAlert dismissViewControllerAnimated:YES completion:nil];}
+                                    ];
+    
+    [comingSoonAlert addAction:defaultAction];
+    [self presentViewController:comingSoonAlert animated:YES completion:nil];
 }
 
 @end
